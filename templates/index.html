@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyse d'avis clients</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            color: white;
+            background: #4a90e2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #357ac9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Analyse d'avis clients</h2>
+
+    <form action="/analyse" method="post">
+        <textarea name="avis" rows="8" required placeholder="Collez ici un avis client..."></textarea>
+        <button type="submit">Analyser</button>
+    </form>
+</div>
+
+</body>
+</html>
+
