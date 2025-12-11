@@ -2,34 +2,33 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Analyse complète</title>
+    <title>Analyse Sentimentale</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #eef1f5;
-            padding: 40px;
+            background: #f2f4f7;
+            padding: 30px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: auto;
-            background: #fff;
-            padding: 30px 40px;
+            background: white;
+            padding: 25px 35px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        h2, h3 { color: #333; }
+        h2, h3 { margin-bottom: 10px; color: #333; }
         .card {
             background: #f8f9fc;
-            padding: 15px 20px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border-left: 5px solid #4a90e2;
         }
         .badge {
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 5px;
             color: white;
             font-weight: bold;
         }
@@ -39,10 +38,9 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
         }
-        table th, table td {
-            padding: 8px;
+        table td, table th {
+            padding: 6px;
             border-bottom: 1px solid #ddd;
         }
         .back {
@@ -51,47 +49,10 @@
         }
         .back a {
             background: #4a90e2;
-            padding: 10px 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
             color: white;
-            border-radius: 8px;
             text-decoration: none;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 20px;
-        }
-        .stats-box {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-item {
-            background: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
-            flex: 1;
-            min-width: 150px;
-        }
-        .stat-item h4 {
-            margin: 0 0 5px 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .stat-item p {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a90e2;
         }
     </style>
 </head>
@@ -100,295 +61,113 @@
 <div class="container">
 
     <h2>Avis analysé</h2>
-    <div class="card">
-        <p>{{ avis }}</p>
-    </div>
+    <div class="card"><p>{{ avis }}</p></div>
 
-    <!-- STATISTIQUES GLOBALES -->
-    <h3>📊 Statistiques Globales</h3>
-    <div class="stats-box">
-        <div class="stat-item">
-            <h4>Sentiment Global</h4>
-            <p class="badge {% if document.score > 0.2 %}pos{% elif document.score < -0.2 %}neg{% else %}neu{% endif %}">
+    <!-- SENTIMENT GLOBAL -->
+    <h3>Sentiment Global</h3>
+    <div class="card">
+        <p>
+            <strong>Label :</strong>
+            <span class="badge 
+                {% if document.score > 0.2 %}pos
+                {% elif document.score < -0.2 %}neg
+                {% else %}neu{% endif %}">
                 {{ document.label }}
-            </p>
-        </div>
-        <div class="stat-item">
-            <h4>Score</h4>
-            <p>{{ "%.3f"|format(document.score) }}</p>
-        </div>
-        <div class="stat-item">
-            <h4>Cohérence</h4>
-            <p>{{ "%.1f"|format(document.coherence * 100) }}%</p>
-        </div>
-        {% if summary %}
-        <div class="stat-item">
-            <h4>Émotion Dominante</h4>
-            <p style="font-size: 18px;">{{ summary.dominant_emotion|capitalize }}</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- COMPARAISON DES MÉTHODES -->
-    <h3>🔍 Comparaison des Méthodes d'Analyse</h3>
-    <div class="card">
-        <div class="chart-container">
-            <canvas id="methodsChart"></canvas>
-        </div>
-        <p style="text-align: center; color: #666; font-size: 14px;">
-            TextBlob: {{ "%.3f"|format(document.tb_score) }} | 
-            VADER: {{ "%.3f"|format(document.vader_score) }} | 
-            Cohérence: {{ "%.1f"|format(document.coherence * 100) }}%
+            </span>
+            <br>
+            <strong>Score :</strong> {{ "%.3f"|format(document.score) }}<br>
+            <strong>Cohérence :</strong> {{ "%.1f"|format(document.coherence * 100) }}%
         </p>
     </div>
 
-    <!-- NIVEAU PHRASES AVEC GRAPHIQUE -->
-    <h3>📝 Analyse par Phrase</h3>
-    <div class="grid-2">
-        <div class="card">
-            <h4>Distribution des Sentiments</h4>
-            <div class="chart-container">
-                <canvas id="phrasesChart"></canvas>
-            </div>
-        </div>
-        <div class="card">
-            <h4>Détail des Phrases</h4>
-            <table>
-                <tr><th>Phrase</th><th>Score</th><th>Sentiment</th></tr>
-                {% for p in phrases %}
-                <tr>
-                    <td>{{ p.phrase[:50] }}{% if p.phrase|length > 50 %}...{% endif %}</td>
-                    <td>{{ "%.3f"|format(p.score) }}</td>
-                    <td>
-                        <span class="badge {% if p.score > 0.2 %}pos{% elif p.score < -0.2 %}neg{% else %}neu{% endif %}" style="font-size: 12px;">
-                            {{ p.label }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+    <!-- METHODE COMPARISON -->
+    <h3>Comparaison TextBlob / VADER</h3>
+    <div class="card">
+        <canvas id="methodsChart" height="120"></canvas>
     </div>
 
-    <!-- CONTRADICTIONS -->
-    {% if contradictions and contradictions|length > 0 %}
-    <h3>⚠️ Phrases Contradictoires Détectées</h3>
-    <div class="card" style="border-left-color: #f39c12;">
-        <p><strong>{{ contradictions|length }}</strong> phrases avec sentiments opposés détectées :</p>
+    <!-- PHRASE ANALYSIS -->
+    <h3>Analyse par Phrase</h3>
+    <div class="card">
         <table>
             <tr><th>Phrase</th><th>Score</th></tr>
-            {% for c in contradictions %}
+            {% for p in phrases %}
             <tr>
-                <td>{{ c.phrase }}</td>
-                <td>{{ "%.3f"|format(c.score) }}</td>
+                <td>{{ p.phrase[:60] }}{% if p.phrase|length > 60 %}...{% endif %}</td>
+                <td>{{ "%.3f"|format(p.score) }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
+
+    <!-- CONTRADICTIONS -->
+    {% if contradictions and contradictions|length > 0 %}
+    <h3>Phrases Contradictoires</h3>
+    <div class="card" style="border-left: 5px solid #f39c12;">
+        <ul>
+        {% for c in contradictions %}
+            <li>{{ c.phrase }} ({{ "%.3f"|format(c.score) }})</li>
+        {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 
-    <!-- HEATMAP ASPECTS -->
-    <h3>🎯 Heatmap Sentiments par Aspect</h3>
+    <!-- ASPECTS -->
+    <h3>Analyse par Aspect</h3>
     <div class="card">
-        <div class="chart-container" style="height: 350px;">
-            <canvas id="aspectsHeatmap"></canvas>
-        </div>
-        {% if summary %}
-        <div style="display: flex; justify-content: space-around; margin-top: 15px;">
-            <div style="text-align: center;">
-                <strong style="color: #2ecc71;">✓ Meilleur Aspect</strong>
-                <p>{{ summary.best_aspect|capitalize if summary.best_aspect else 'N/A' }}</p>
-            </div>
-            <div style="text-align: center;">
-                <strong style="color: #e74c3c;">✗ Aspect à Améliorer</strong>
-                <p>{{ summary.worst_aspect|capitalize if summary.worst_aspect else 'N/A' }}</p>
-            </div>
-        </div>
-        {% endif %}
+        <table>
+            {% for a, s in aspects.items() %}
+            <tr>
+                <td><strong>{{ a|capitalize }}</strong></td>
+                <td>{{ s }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 
-    <!-- EMOTIONS AVEC GRAPHIQUES -->
-    <h3>😊 Analyse Émotionnelle</h3>
-    <div class="grid-2">
-        <div class="card">
-            <h4>Distribution des Émotions (Barres)</h4>
-            <div class="chart-container">
-                <canvas id="emotionChart"></canvas>
-            </div>
-        </div>
-        <div class="card">
-            <h4>Répartition Émotionnelle (Camembert)</h4>
-            <div class="chart-container">
-                <canvas id="emotionPieChart"></canvas>
-            </div>
-        </div>
+    <!-- EMOTIONS -->
+    <h3>Émotions détectées</h3>
+    <div class="card">
+        <canvas id="emotionChart" height="130"></canvas>
     </div>
 
-    <!-- SCRIPTS GRAPHIQUES -->
-    <script>
-        // Données
-        const emotions = {{ emotions|tojson }};
-        const phrases = {{ phrases|tojson }};
-        const aspects = {{ aspects|tojson }};
-        const document = {{ document|tojson }};
-
-        // Configuration commune
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            }
-        };
-
-        // 1. Graphique Comparaison des Méthodes
-        new Chart(document.getElementById("methodsChart"), {
-            type: "bar",
-            data: {
-                labels: ["TextBlob", "VADER", "Score Final"],
-                datasets: [{
-                    label: "Score",
-                    data: [document.tb_score, document.vader_score, document.score],
-                    backgroundColor: ["#3498db", "#9b59b6", "#2ecc71"],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                ...commonOptions,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        min: -1,
-                        max: 1
-                    }
-                }
-            }
-        });
-
-        // 2. Graphique Distribution des Phrases
-        const phrasesData = phrases.map(p => p.score);
-        const phrasesLabels = phrases.map((p, i) => `P${i + 1}`);
-        const phrasesColors = phrasesData.map(s => 
-            s > 0.2 ? '#2ecc71' : s < -0.2 ? '#e74c3c' : '#95a5a6'
-        );
-
-        new Chart(document.getElementById("phrasesChart"), {
-            type: "bar",
-            data: {
-                labels: phrasesLabels,
-                datasets: [{
-                    label: "Sentiment",
-                    data: phrasesData,
-                    backgroundColor: phrasesColors,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                ...commonOptions,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        min: -1,
-                        max: 1
-                    }
-                }
-            }
-        });
-
-        // 3. Heatmap Aspects (simulations avec barres horizontales)
-        const aspectsKeys = Object.keys(aspects);
-        const aspectsValues = Object.values(aspects).map(v => v === null ? 0 : v);
-        const aspectsColors = aspectsValues.map(v => 
-            v > 0.2 ? '#2ecc71' : v < -0.2 ? '#e74c3c' : '#95a5a6'
-        );
-
-        new Chart(document.getElementById("aspectsHeatmap"), {
-            type: "bar",
-            data: {
-                labels: aspectsKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1)),
-                datasets: [{
-                    label: "Score Sentiment",
-                    data: aspectsValues,
-                    backgroundColor: aspectsColors,
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    x: { 
-                        beginAtZero: true,
-                        min: -1,
-                        max: 1
-                    }
-                }
-            }
-        });
-
-        // 4. Émotions - Barres
-        const emotionsFiltered = Object.entries(emotions)
-            .filter(([k, v]) => v > 0)
-            .sort((a, b) => b[1] - a[1]);
-        
-        new Chart(document.getElementById("emotionChart"), {
-            type: "bar",
-            data: {
-                labels: emotionsFiltered.map(e => e[0].charAt(0).toUpperCase() + e[0].slice(1)),
-                datasets: [{
-                    label: "Intensité",
-                    data: emotionsFiltered.map(e => e[1]),
-                    backgroundColor: ["#3498db", "#e74c3c", "#f39c12", "#9b59b6", "#1abc9c", "#34495e"],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                ...commonOptions,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        max: 1
-                    }
-                }
-            }
-        });
-
-        // 5. Émotions - Camembert
-        if (emotionsFiltered.length > 0) {
-            new Chart(document.getElementById("emotionPieChart"), {
-                type: "doughnut",
-                data: {
-                    labels: emotionsFiltered.map(e => e[0].charAt(0).toUpperCase() + e[0].slice(1)),
-                    datasets: [{
-                        data: emotionsFiltered.map(e => e[1]),
-                        backgroundColor: ["#3498db", "#e74c3c", "#f39c12", "#9b59b6", "#1abc9c", "#34495e"]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-
-    <!-- LIEN -->
+    <!-- BACK -->
     <div class="back">
         <a href="/">← Nouvelle analyse</a>
     </div>
-
 </div>
+
+<script>
+    const documentData = {{ document|tojson }};
+    const emotions = {{ emotions|tojson }};
+
+    // Comparaison TextBlob / VADER
+    new Chart(document.getElementById("methodsChart"), {
+        type: "bar",
+        data: {
+            labels: ["TextBlob", "VADER", "Final"],
+            datasets: [{
+                data: [documentData.tb_score, documentData.vader_score, documentData.score],
+                backgroundColor: ["#3498db", "#9b59b6", "#2ecc71"]
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Émotions
+    new Chart(document.getElementById("emotionChart"), {
+        type: "bar",
+        data: {
+            labels: Object.keys(emotions),
+            datasets: [{
+                data: Object.values(emotions),
+                backgroundColor: "#4a90e2"
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+
 </body>
 </html>
-
 

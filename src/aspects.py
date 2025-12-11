@@ -23,7 +23,6 @@ def analyse_aspects(text):
                 sent_score = tb(s).sentiment[0]
                 result[aspect].append({"phrase": s, "score": sent_score})
 
-    # Moyenne par aspect
     final = {}
     for a, values in result.items():
         if values:

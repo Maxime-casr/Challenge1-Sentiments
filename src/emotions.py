@@ -18,7 +18,6 @@ def detecter_emotions(text):
             if w in text:
                 scores[emotion] += 1
 
-    # Normalisation simple
     total = sum(scores.values())
     if total > 0:
         for e in scores:

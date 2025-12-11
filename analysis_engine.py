@@ -12,7 +12,6 @@ tb = Blobber(pos_tagger=PatternTagger(), analyzer=PatternAnalyzer())
 vader = SentimentIntensityAnalyzer()
 
 
-# --- SENTIMENT GLOBAL ---
 def analyse_document(text):
     tb_score = tb(text).sentiment[0]
     vader_score = vader.polarity_scores(text)["compound"]
@@ -37,7 +36,6 @@ def classifier(score):
     return "Très Négatif"
 
 
-# --- SENTIMENT PAR PHRASE ---
 def analyse_phrases(text):
     doc = nlp(text)
     results = []
@@ -54,7 +52,6 @@ def analyse_phrases(text):
     return results
 
 
-# --- DETECTION DE CONTRADICTIONS ---
 def detect_contradictions(phrases):
     pos = [p for p in phrases if p["score"] > 0.3]
     neg = [p for p in phrases if p["score"] < -0.3]
@@ -66,15 +63,12 @@ def detect_contradictions(phrases):
     return contradictions
 
 
-# --- RESUME GLOBAL ---
 def build_summary(doc_sent, aspects, emotions):
-    # Aspect le plus fort/faible
     valid_aspects = {k: v for k, v in aspects.items() if v is not None}
 
     best_aspect = max(valid_aspects, key=valid_aspects.get) if valid_aspects else None
     worst_aspect = min(valid_aspects, key=valid_aspects.get) if valid_aspects else None
 
-    # Émotion dominante
     dominant_emotion = max(emotions, key=emotions.get)
 
     return {
@@ -85,7 +79,6 @@ def build_summary(doc_sent, aspects, emotions):
     }
 
 
-# --- PIPELINE COMPLET ---
 def analyse_complete(text):
     doc = analyse_document(text)
     phrases = analyse_phrases(text)
